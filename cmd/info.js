@@ -21,7 +21,7 @@ module.exports = async (sock, msg, args) => {
 ╭━━〔 *Informasi Grup* 〕
 ┃ 📛 *Nama Grup* : ${groupName}
 ┃ 👥 *Jumlah Anggota* : ${participantCount}
-┃ 📝 *Deskripsi* : ${groupDescription}
+┃ 📝 *Deskripsi* : \n${groupDescription}
 `;
 
         // Mengirimkan pesan informasi grup

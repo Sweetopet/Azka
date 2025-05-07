@@ -1,3 +1,4 @@
+// === Import Awal ===
 const {
     default: makeWASocket,
     useMultiFileAuthState,
@@ -27,7 +28,6 @@ async function startBot() {
 
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect } = update;
-
         if (connection === 'close') {
             const reason = lastDisconnect?.error?.output?.statusCode;
             console.log(chalk.redBright('Connection closed. Reconnecting...'));
@@ -41,6 +41,68 @@ async function startBot() {
         }
     });
 
+   sock.ev.on('group-participants.update', async (update) => {
+    const { id, participants, action } = update;
+    const metadata = await sock.groupMetadata(id).catch(() => null);
+    if (!metadata) return;
+
+    const welcomeData = JSON.parse(fs.readFileSync('./data/welcome.json', 'utf-8'));
+    const goodbyeData = JSON.parse(fs.readFileSync('./data/goodbye.json', 'utf-8'));
+    const isWelcomeOn = welcomeData[id];
+    const isGoodbyeOn = goodbyeData[id];
+
+    for (const participant of participants) {
+        try {
+            const groupName = metadata.subject;
+            const waktu = moment().tz('Asia/Jakarta').format('HH:mm:ss');
+            const tanggal = moment().tz('Asia/Jakarta').format('D MMMM YYYY');
+            const tagUser = `@${participant.split('@')[0]}`;
+
+            if (action === 'add' && isWelcomeOn) {
+                const teks =
+`*ꞌꞋ ࣪𓂃 ִֶָ 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 𓂃 ִֶָ ࣪ꞌꞋ*
+
+✨ *Nama:* ${tagUser}
+👥 *Grup:* ${groupName}
+🗓️ *Tanggal:* ${tanggal}
+🕖 *Jam:* ${waktu}
+
+📌 _Ketik_ *List* untuk melihat menu pricelist
+📌 _Ketik_ *Payment* untuk info pembayaran
+
+⚠️ *NOTE*\n_Keluar dari grup berarti garansi hangus ya_`;
+
+                await sock.sendMessage(id, {
+                    image: { url: 'https://files.catbox.moe/0fecnu.jpeg' },
+                    caption: teks,
+                    mentions: [participant]
+                });
+            }
+
+            if (action === 'remove' && isGoodbyeOn) {
+                const teks =
+`*ꞌꞋ ࣪𓂃 ִֶָ 𝗚𝗢𝗢𝗗𝗕𝗬𝗘 𓂃 ִֶָ ࣪ꞌꞋ*
+
+✨ *Nama:* ${tagUser}
+👥 *Grup:* ${groupName}
+🗓️ *Tanggal:* ${tanggal}
+🕖 *Jam:* ${waktu}
+
+_Yahh garansi nya hilang dong ☺️_`;
+
+                await sock.sendMessage(id, {
+                    image: { url: 'https://files.catbox.moe/xpf3k2.jpeg' },
+                    caption: teks,
+                    mentions: [participant]
+                });
+            }
+        } catch (e) {
+            console.log('Error di group-participants.update:', e);
+        }
+    }
+});
+
+    // === Handler Pesan Masuk ===
     sock.ev.on('messages.upsert', async (m) => {
         try {
             const msg = m.messages[0];
@@ -53,7 +115,6 @@ async function startBot() {
                 : type === 'extendedTextMessage'
                     ? msg.message.extendedTextMessage.text
                     : '';
-
             if (!body) return;
 
             const sender = msg.key.participant || msg.key.remoteJid;
@@ -75,20 +136,19 @@ async function startBot() {
             console.log(chalk.white(`Pesan: "${body}"`));
             console.log(chalk.yellow('===============================\n'));
 
+            // Cek dan balas data list
             const dataPath = './data/data.json';
             const pesan = body.trim().toLowerCase();
             if (fs.existsSync(dataPath)) {
                 const data = JSON.parse(fs.readFileSync(dataPath));
                 const kategoriList = Object.keys(data);
 
-                // User ketik nama kategori (tanpa prefix)
                 const kategoriKey = kategoriList.find(k => k.toLowerCase() === pesan);
                 if (kategoriKey) {
                     const isi = data[kategoriKey];
                     return sock.sendMessage(from, { text: isi });
                 }
 
-                // User ketik "list"
                 if (pesan === 'list') {
                     if (kategoriList.length === 0) {
                         return sock.sendMessage(from, { text: '❌ Belum ada daftar produk tersedia.' });
@@ -97,33 +157,33 @@ async function startBot() {
                         const waktuList = moment().tz("Asia/Jakarta").locale('id').format("dddd, D MMMM YYYY HH:mm:ss");
 
                         const teks =
-`*❏「 AZKASHOP INDONESIA 」❏*
+`*❏「 APP PREMIUM V2.0 」❏*
 ╭──────────────────╮
 │ *Halo*, ${pushName}
 │ *${waktuList}*
 │────────୨ৎ─────────
 │𝐾𝑒𝑡𝑖𝑘 𝑙𝑎𝑦𝑎𝑛𝑎𝑛 𝑑𝑖𝑏𝑎𝑤𝑎ℎ 𝑢𝑛𝑡𝑢𝑘,
 │𝑚𝑒𝑙𝑖ℎ𝑎𝑡 𝐷𝑎𝑓𝑡𝑎𝑟 𝐻𝑎𝑟𝑔𝑎
+│────────୨ৎ─────────
 ${kategoriList.map(k => `│あ ${k}`).join('\n')}
 │
 ╰──────────────────╯
-> _Ketik nama layanan untuk melihat detailnya._`;
+> _Ketik nama layanan menggunakan huruf besar untuk melihat detailnya._`;
 
                         return sock.sendMessage(from, { text: teks });
                     }
                 }
             }
 
-            // Respon tanpa prefix: keyword khusus
             if (pesan === 'payment') {
-                const teks = `*〘 METODE PEMBAYARAN 〙*\n\n• Gopay : 08xxxxxxx\n• Dana : 08xxxxxxx\n• BCA : 1234567890 (a.n Nama)\n• Qris : (lihat gambar)\n\n*Silakan pilih metode dan konfirmasi setelah pembayaran.*`;
+                const teks = `*〘 METODE PEMBAYARAN 〙*\n\n• Gopay : 083892801524\nA/n : Andry Elva Rizal Lubis\n\n• Dana : 087804572203\nA/n : Yessy Anggraeni\n\n• SEABANK : 901951956400\nA/n : Andry Elva Rizal Lubis\n\n*𝐒𝐄𝐑𝐓𝐀𝐊𝐀𝐍 𝐁𝐔𝐊𝐓𝐈 𝐓𝐅 𝐀𝐆𝐀𝐑 𝐒𝐄𝐆𝐄𝐑𝐀 𝐃𝐈 𝐏𝐑𝐎𝐒𝐄𝐒 𝐎𝐋𝐄𝐇 𝐎𝐖𝐍𝐄𝐑 !!*\n\n*Silakan pilih metode dan konfirmasi setelah pembayaran.*`;
                 return sock.sendMessage(from, {
-                    image: { url: 'https://files.catbox.moe/yr3khv.png' },
+                    image: { url: 'https://files.catbox.moe/vm14ko.jpeg' },
                     caption: teks
                 });
             }
 
-            // HANDLE COMMAND DENGAN PREFIX
+            // === Handler Command Prefix ===
             const prefixes = config.prefix;
             const prefixUsed = prefixes.find(p => body.startsWith(p));
             if (!prefixUsed) return;

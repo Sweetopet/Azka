@@ -1,13 +1,14 @@
+const moment = require('moment-timezone');
+
 module.exports = async (sock, msg, args) => {
     const from = msg.key.remoteJid;
 
-    // Hitung waktu sekarang
-    const now = new Date();
-    const jamSekarang = now.toLocaleTimeString('id-ID', { hour12: false });
+    // Jam sekarang di Asia/Jakarta
+    const jamSekarang = moment().tz('Asia/Jakarta').format('HH:mm:ss');
 
     // Hitung response time / ping
     const timestamp = msg.messageTimestamp * 1000;
-    const ping = new Date().getTime() - timestamp;
+    const ping = Date.now() - timestamp;
 
     // Status berdasarkan ping
     let status;

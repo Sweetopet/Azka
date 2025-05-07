@@ -31,6 +31,10 @@ module.exports = async (sock, msg, args, prefix) => {
         `${prefix}addlist`,
         `${prefix}dellist`,
         `${prefix}editlist`,
+        `${prefix}wlc-enable`,
+        `${prefix}wlc-disable`,
+        `${prefix}goodbye-enable`,
+        `${prefix}goodbye-disable`,
     ];
 
     let teks = `🫶 Hello *${pushName}*\nɪ ᴀᴍ ᴀᴜᴛᴏᴍᴀᴛᴇᴅ ꜱyꜱᴛᴇᴍ\n(ᴡᴀ ʙᴏᴛ) ᴛʜᴀᴛ ᴄᴀɴ ʜᴇʟᴩ ᴛᴏ ᴅᴏ\nꜱᴏᴍᴇᴛʜɪɴɢ, ꜱᴇᴀʀᴄʜ ᴀɴᴅ ɢᴇᴛ ᴅᴀᴛᴀ / ɪɴꜰᴏʀᴍᴀᴛɪᴏɴ ᴏɴʟy ᴛʜʀᴏᴜɢʜ ᴡʜᴀᴛꜱᴀᴩᴩ\n\n⚠️ ʙᴏᴛ ɪɴɪ ᴍᴀꜱɪʜ ᴛᴀʜᴀᴩ\nʙᴇᴛᴀ ᴀᴩᴀʙɪʟᴀ ᴀᴅᴀ ʙᴜɢ/\nᴇʀᴏʀ ʜᴀʀᴀᴩ ʟᴀᴩᴏʀ ᴋᴇ ᴏᴡɴᴇʀ\n\n⏰ ${waktu}\n\n`;
