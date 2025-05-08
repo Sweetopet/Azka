@@ -2,6 +2,10 @@
   "name": "azka",
   "version": "1.0.0",
   "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.17.16",
     "abort-controller": "^3.0.0",
@@ -260,11 +264,17 @@
     "ytdl-core": "^4.11.5",
     "ytsr": "^3.8.4"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sweetopet/Azka.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sweetopet/Azka/issues"
+  },
+  "homepage": "https://github.com/Sweetopet/Azka#readme",
   "description": ""
 }
